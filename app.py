@@ -1,7 +1,4 @@
-
 from flask import Flask, render_template, request, jsonify
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-import torch
 import json
 import re
 from datetime import datetime
@@ -39,27 +36,10 @@ PERSONAL_INFO = {
     }
 }
 
-# Initialize the chatbot model
+# Lightweight chatbot class - Rule-based only for fast deployment
 class PersonalChatbot:
     def __init__(self):
-        try:
-            # Using a lightweight model for better performance
-            model_name = "microsoft/DialoGPT-small"
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModelForCausalLM.from_pretrained(model_name)
-            
-            # Add padding token if not present
-            if self.tokenizer.pad_token is None:
-                self.tokenizer.pad_token = self.tokenizer.eos_token
-                
-            self.chat_history_ids = None
-            print("Chatbot model loaded successfully!")
-            
-        except Exception as e:
-            print(f"Error loading model: {e}")
-            # Fallback to a simple rule-based system
-            self.model = None
-            self.tokenizer = None
+        print("Lightweight BharathBot initialized - Rule-based responses only")
     
     def get_personal_response(self, message):
         """Generate smart, engaging responses based on Bharath's personal information"""
@@ -222,52 +202,23 @@ It's designed to be smooth and responsive! 📱💻"""
         return None
     
     def generate_response(self, message):
-        # First try to get a personal response
+        # Try to get a personal response first
         personal_response = self.get_personal_response(message)
         if personal_response:
             return personal_response
         
-        # If no model is loaded, use fallback responses
-        if not self.model or not self.tokenizer:
-            return "I'm sorry, I didn't quite understand that. Try asking me about my background, skills, experience, or interests!"
-        
-        try:
-            # Encode the message and chat history
-            new_user_input_ids = self.tokenizer.encode(
-                message + self.tokenizer.eos_token, return_tensors='pt'
-            )
-            
-            # Append to chat history
-            if self.chat_history_ids is not None:
-                bot_input_ids = torch.cat([self.chat_history_ids, new_user_input_ids], dim=-1)
-            else:
-                bot_input_ids = new_user_input_ids
-            
-            # Generate response
-            with torch.no_grad():
-                self.chat_history_ids = self.model.generate(
-                    bot_input_ids,
-                    max_length=1000,
-                    num_beams=3,
-                    no_repeat_ngram_size=3,
-                    do_sample=True,
-                    temperature=0.7,
-                    pad_token_id=self.tokenizer.eos_token_id
-                )
-            
-            # Decode the response
-            response = self.tokenizer.decode(
-                self.chat_history_ids[:, bot_input_ids.shape[-1]:][0],
-                skip_special_tokens=True
-            )
-            
-            return response if response else "I'm not sure how to respond to that. Ask me about my background!"
-            
-        except Exception as e:
-            print(f"Error generating response: {e}")
-            return "I'm having trouble generating a response right now. Try asking me about my background, skills, or experience!"
+        # Fallback for unmatched queries
+        return """I'm sorry, I didn't quite understand that specific question! 🤔
 
-# Initialize chatbot
+**Try asking me about:**
+• Bharath's skills and projects
+• His resume and portfolio  
+• How to contact him
+• His learning journey and motivation
+
+You can also use the quick buttons below! 💬"""
+
+# Initialize lightweight chatbot
 chatbot = PersonalChatbot()
 
 @app.route('/')
@@ -298,10 +249,12 @@ def chat():
 @app.route('/reset', methods=['POST'])
 def reset_chat():
     """Reset chat history"""
-    global chatbot
-    if chatbot.model:
-        chatbot.chat_history_ids = None
     return jsonify({'status': 'Chat history reset'})
+
+@app.route('/health')
+def health():
+    """Health check endpoint for deployment"""
+    return jsonify({'status': 'healthy', 'chatbot': 'BharathBot ready!'})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
