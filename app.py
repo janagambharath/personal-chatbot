@@ -10,7 +10,7 @@ app = Flask(__name__)
 # Enhanced Personal Information with more dynamic content
 PERSONAL_INFO = {
     "name": "Janagam Bharath",
-    "age": "Student",
+    "age": "18",
     "location": "Hyderabad, India",
     "profession": "Aspiring LLM Engineer & Python Developer",
     "current_study": "Diploma in ECE, transitioning to Computer Science",
