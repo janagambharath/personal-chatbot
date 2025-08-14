@@ -347,10 +347,10 @@ Imagine someone who looked at ECE and said, "This is cool, but AI is calling my 
 **Fun Algorithm:** 
 ```
 while (learning == true) {
-    build_projects();
-    solve_problems();
-    level_up_skills();
-    repeat_with_more_passion();
+    build_projects()
+    solve_problems()
+    level_up_skills()
+    repeat_with_more_passion()
 }
 ```
 
